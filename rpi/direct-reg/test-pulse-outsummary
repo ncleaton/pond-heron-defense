@@ -1,0 +1,11 @@
+#!/usr/bin/python3
+
+import sys
+
+prev = []
+
+for line in sys.stdin:
+	words = line.strip().split()
+	if words[2:] != prev:
+		print("\t".join(words))
+		prev = words[2:]
