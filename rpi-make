@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -o errexit
+
+rsync -av rpi/. rpi:rpi/.
+ssh rpi 'cd rpi/direct-reg && make'

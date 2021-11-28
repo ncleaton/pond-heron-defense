@@ -1,0 +1,21 @@
+#!/usr/bin/python3
+
+
+import sys
+
+
+prev = None
+runlen = 0
+
+for line in sys.stdin:
+	val = line.strip().split()[-1]
+	if val == prev:
+		runlen += 1
+	else:
+		runlen = 0
+		prev = val
+	oval = runlen
+	if val == '0':
+		oval *= -1
+	print(oval)
+	

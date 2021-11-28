@@ -87,7 +87,7 @@ void print_gpio(unsigned n)
 #define pulse_readmask ( (1<<pulse_in_pin) | (1<<pulse_old_in_pin) | (1<<pulse_active_in_pin) | (1<<ir_in_pin) )
 #define PULSE_SAMPLE ( GET_ALL_GPIO & pulse_readmask ) 
 
-#define SAMPLE_SIZE 100000
+#define SAMPLE_SIZE 1000000
 
 int main(int argc, char **argv)
 {

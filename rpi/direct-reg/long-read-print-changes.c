@@ -87,20 +87,13 @@ void print_gpio(unsigned n)
 #define pulse_readmask ( (1<<pulse_in_pin) | (1<<pulse_old_in_pin) | (1<<pulse_active_in_pin) | (1<<ir_in_pin) )
 #define PULSE_SAMPLE ( GET_ALL_GPIO & pulse_readmask ) 
 
-#define SAMPLE_SIZE 100000
+#define SAMPLE_COUNT 1000000
 
 int main(int argc, char **argv)
 {
-  unsigned char *results;
   struct timeval started_tv, finished_tv;
   long us_diff;
-  double scale_factor;
-
-  results = malloc(SAMPLE_SIZE * sizeof(*results));
-  if (! results) {
-    fprintf(stderr, "out of memory\n");
-    return 1;
-  }
+  int x, old_x;
 
   // Set up gpi pointer for direct register access
   setup_io();
@@ -116,31 +109,30 @@ int main(int argc, char **argv)
 
   sleep(1);
 
-  // warm up cache
-  for ( int i=0 ; i<SAMPLE_SIZE ; i++ ) {
-    results[i] = i % 256;
-  }
-
   gettimeofday(&started_tv, NULL);
   GPIO_SET = (1<<pulse_trigger_out_pin);
-  for ( int i=0 ; i<SAMPLE_SIZE ; i++ ) {
-    results[i] = GET_ALL_GPIO & pulse_readmask;
+  
+  old_x = -1;
+  for ( int i=0 ; i<SAMPLE_COUNT ; i++ ) {
+    x = PULSE_SAMPLE ;
+    if (x != old_x) {
+      printf("%d %d %d %d %d\n", i,
+	 x&(1<<pulse_in_pin) ? 1 : 0,
+	 x&(1<<pulse_old_in_pin) ? 1 : 0,
+	 x&(1<<pulse_active_in_pin) ? 1 : 0,
+	 x&(1<<ir_in_pin) ? 1 : 0);
+      old_x = x;
+    }
   }
+      printf("%d %d %d %d %d\n", SAMPLE_COUNT,
+	 x&(1<<pulse_in_pin) ? 1 : 0,
+	 x&(1<<pulse_old_in_pin) ? 1 : 0,
+	 x&(1<<pulse_active_in_pin) ? 1 : 0,
+	 x&(1<<ir_in_pin) ? 1 : 0);
+
   gettimeofday(&finished_tv, NULL);
 
   GPIO_CLR = (1<<pulse_trigger_out_pin);
-
-  us_diff = (finished_tv.tv_sec - started_tv.tv_sec) * 1000000;
-  us_diff += finished_tv.tv_usec - started_tv.tv_usec;
-  scale_factor = ( (double)us_diff / (double)SAMPLE_SIZE );
-  printf("elapsed us %ld\n", us_diff);
-
-  for ( int j=0 ; j<SAMPLE_SIZE ; j++ )
-    printf("%d %.3f %d %d %d %d\n", j, j*scale_factor,
-       results[j]&(1<<pulse_in_pin) ? 1 : 0,
-       results[j]&(1<<pulse_old_in_pin) ? 1 : 0,
-       results[j]&(1<<pulse_active_in_pin) ? 1 : 0,
-       results[j]&(1<<ir_in_pin) ? 1 : 0);
 
   us_diff = (finished_tv.tv_sec - started_tv.tv_sec) * 1000000;
   us_diff += finished_tv.tv_usec - started_tv.tv_usec;
